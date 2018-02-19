@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 552306e8b43303d40ad023f91a404cb7
+timeCreated: 1519013708
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - target: {fileID: 4774574428616808, guid: 474c701d2a0ad734d82252cd4f158834, type: 2}
+  - trollPrefab: {instanceID: 0}
+  - orkPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

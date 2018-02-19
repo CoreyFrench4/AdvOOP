@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Generics
+/*namespace Generics
 {
     public class CustomList<IceT> 
     {
@@ -24,4 +24,4 @@ namespace Generics
         }
        
     }
-}
+}*/

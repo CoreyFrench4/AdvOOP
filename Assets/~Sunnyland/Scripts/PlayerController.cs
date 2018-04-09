@@ -19,6 +19,9 @@ namespace SunnyLand
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
+        public int health = 100;
+        public int damage = 50;
+        [Header("Movement")]
         public float speed = 5f;
         public float maxVelocity = 2f;
         [Header("Grounding")]
@@ -55,6 +58,8 @@ namespace SunnyLand
         private Vector3 moveDirection;
         private int currentJump = 0;
 
+        private float inputH, inputV;
+
         private float vertical, horizontal;
 
         // References
@@ -82,12 +87,49 @@ namespace SunnyLand
         {
             Ray groundRay = new Ray(transform.position, Vector3.down);
             Gizmos.DrawLine(groundRay.origin, groundRay.origin + groundRay.direction * rayDistance);
+            // Drawing the 'right' ray
+            Vector3 right = Vector3.Cross(groundNormal, Vector3.forward);
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(transform.position - right,
+                            transform.position + right);
         }
 
         #endregion
 
         #region Custom Functions
-        // Check to see if ray hit object is ground
+        void PerformMove()
+        {
+            if (isOnSlope && // If the player is standing on a slope AND
+               inputH == 0 && // No input is on horizontal AND
+               isGrounded) // Player is grounded
+            {
+                // Cancel the velocity
+                rigid.velocity = Vector3.zero;
+            }
+
+            Vector3 right = Vector3.Cross(groundNormal, Vector3.back);
+            rigid.AddForce(right * inputH * speed);
+
+            // Limit the velocity max velocity
+            LimitVelocity();
+        }
+        void PerformJump()
+        {
+            // If player is jumping
+            if (isJumping)
+            {
+                // If player is allowed to jump
+                if (currentJump < maxJumpCount)
+                {
+                    // Increase the jump count
+                    currentJump++;
+                    // Perform jump logic
+                    rigid.AddForce(Vector2.up * jumpHeight, ForceMode2D.Impulse);
+                }
+                // Reset jump input
+                isJumping = false;
+            }
+        }
         bool CheckSlope(RaycastHit2D hit)
         {
             // Grab the angle in degrees of the surface we're standing on
@@ -173,8 +215,12 @@ namespace SunnyLand
             }
 
         }
-    
-    void LimitVelocity()
+        void DetectClimbable()
+        {
+
+        }
+
+        void LimitVelocity()
     {
             // If Rigid's velocity (magnitude) is greater than maxVelocity
             if (rigid.velocity.magnitude > maxVelocity)
@@ -183,28 +229,74 @@ namespace SunnyLand
                 rigid.velocity = rigid.velocity.normalized * maxVelocity;
             }
         }
+        void UpdateCollider()
+        {
 
-    public void Jump()
-    {
-        // If currentJump is less than max jump
-        // Increment currentJump
-        // Add force to player (using Impulse)
-    }
-    public void Move(float horizontal)
-    {
-        // If horizontal > 0
-        // Flip Character
-        // If horizontal < 0
-        // Flip Character
+        }
 
-        // Add force to player in the right direction
-        // Limit Velocity
-    }
+        public void Jump()
+        {
+            isJumping = true;
 
-    public void Climb()
-    {
-        // CHALLENGE
+            if (onJump != null)
+            {
+                onJump.Invoke();
+            }
+        }
+        public void Move(float horizontal)
+        {
+            if (horizontal != 0)
+            {
+                rend.flipX = horizontal < 0;
+            }
+
+            inputH = horizontal;
+
+            // Invoke event
+            if (onMove != null)
+            {
+                onMove.Invoke(inputH);
+            }
+        }
+        public void Climb(float vertical)
+        {
+            // CHALLENGE
+        }
+        public void Crouch()
+        {
+            isCrouching = true;
+            // Invoke event
+            if (onCrouchChanged != null)
+            {
+                onCrouchChanged.Invoke(isCrouching);
+            }
+        }
+        public void UnCrouch()
+        {
+
+        }
+        public void Hurt(int damage, Vector2? hitNormal = null)
+        {
+            // Set a default hit direction
+            Vector2 force = Vector2.up;
+            if (hitNormal != null) // If a hitNormal exists
+            {
+                // Use the hit normal as a direction
+                force = hitNormal.Value;
+            }
+
+            health -= damage;
+
+            // Add force in the hit direction
+            rigid.AddForce(force * damage, ForceMode2D.Impulse);
+            
+            // Invoke event
+            if (onHurt != null)
+            {
+                // Play hurt sound or animation
+                onHurt.Invoke();
+            }
+        }
+        #endregion
     }
-    #endregion
-}
 }
